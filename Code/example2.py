@@ -170,12 +170,13 @@ while (t := sim.getSimulationTime()) < 20:
                 if i % 2 == 1:      # is joint
                     sim.setJointPosition(i, -pos_now[(i - 17) // 2])
         if t < 7:
-            startPosition = np.array([0, -600, 0, pi, 0, -pi/2])
-            endPosition = np.array([0, -600, 20, pi, 0, -pi/2])
-            startX1 = 2/3*pi
-            endX1 = 2/3*pi
-            tim = 1
-            q = straightTrajPlaning(startPosition, startX1, endPosition, endX1, t-6, tim)
+            # startPosition = np.array([0, -600, 0, pi, 0, -pi/2])
+            # endPosition = np.array([0, -600, 20, pi, 0, -pi/2])
+            # startX1 = 2/3*pi
+            # endX1 = 2/3*pi
+            # tim = 1
+            # q = straightTrajPlaning(startPosition, startX1, endPosition, endX1, t-6, tim) # 你用直线图啥呢，嫌命不够长吗？
+            q = sexticCurveExecute(k_2_0, t-6)
 
         elif t < 10:
             q = sexticCurveExecute(k_2_1, t-7)

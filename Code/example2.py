@@ -83,8 +83,7 @@ def set_joint_positions(sim, q, base):
         sim.setJointPosition(R_joint2, q[5])
         sim.setJointPosition(R_joint1, q[6])
 
-# 关节角通过IK_L_base.py和IK_R_base.py计算
-# q_test = np.array([0, -1.0471975511965979, -2.707988850562399, 1.539541238295402, 1.9731450413227956, 2.094395102393195, -6.123233995736766e-17]) #L_base, 600
+# 关节角通过inverse_kinematics.py计算。你需要首先基本知道q0，q1，q2的大概值，然后再迭代出好值。
 
 # 由于仿真坐标系和实际坐标系不同，关节角需要转换。具体而言：L_base的关节角2,3,4,6,7需要取反，R_base的关节角2,4,5,6,7需要取反。
 # 以下是原来的参数

@@ -4,12 +4,6 @@ import numpy as np
 from numpy import cos, sin, arcsin, arccos, arctan2, sqrt, pi
 import math
 
-"""
-
-现在这个代码还有些问题 Dr.Red 2024.6.27
-
-"""
-
 #通过枚举x1来解出剩下的所有角
 def calc_angle2and6(r, x, y, z, x1, base_dir):
     a1 = -r[0, 2] * cos(x1) - r[1, 2] * sin(x1) #cos的系数
@@ -39,18 +33,7 @@ def calc_angle7(r, x1, x2, x6):
     x7 = arctan2(s, c)
     return x7
 
-# def calc_angle345(r, x1, x6, x7):
-#     # m = r[0, 0] * sin(x1) - r[1, 0] * cos(x1)
-#     # b = -cos(x7) * sin(x6)
-#     # a = sin(x7)
-    
-#     m = r[0,1]*sin(x1) - r[1,1]*cos(x1)
-#     a = cos(x7)
-#     b = sin(x6)*sin(x7) # acosx+bsinx = m
-#     print("x345:", arcsin(m / sqrt(a ** 2 + b ** 2)) - arctan2(a, b))
-#     return arcsin(m / sqrt(a ** 2 + b ** 2)) - arctan2(a, b)
-
-def calc_angle345(r, x1, x6, x7):
+def calc_angle345(r, x1,x2, x6, x7):
     """
     根据变换矩阵方程求解角度345的和
     T7^2(3,1) = s7*s345 - c7*s6*c345 = s1*r11 - c1*r21
@@ -63,26 +46,40 @@ def calc_angle345(r, x1, x6, x7):
     # 系数矩阵和求解
     # s345 * s7 + c345 * (-c7*s6) = rhs1
     # s345 * (s7*s6) + c345 * c7 = rhs2
-    A = np.array([[sin(x7), -cos(x7) * sin(x6)],
+    A = np.array([[-cos(x7) * sin(x6), sin(x7)],
                   [sin(x7) * sin(x6), cos(x7)]])
     b = np.array([rhs1, rhs2])
     
     solution = np.linalg.solve(A, b)
     s345 = solution[0]
     c345 = solution[1]
-    
+    print("s345：",s345)
+    print("c345：",c345)
     x345 = arctan2(s345, c345)
+    print("345:",x345)
     return x345
 
 def calc_angle34(x, y, z, x1, x2, x6, x345):
     m1 = (120*cos(x345)*cos(x6) - 100*sin(x345) + (z - 120) * cos(x2) - x * cos(x1) * sin(x2) - y * sin(x1) * sin(x2)) / 400 #c3-c34
+    m2 = -(-120*sin(x345)*cos(x6) - 100*cos(x345) + x * sin(x1) - y * cos(x1) + 100) / 400 #s3-s34
+    gamma = arctan2(m1, -m2)
+    print("gamma:", gamma)
+    x4_1 = 0
+    x4_2 = 0
+    if(sin(gamma) > 1e-10):
+        x4_1 = 2 * arcsin(m1 / 2 / sin(gamma))
+        x4_2 = 2 * np.pi - x4_1
+    else:
+        x4_1 = 2 * arcsin(-m2 / 2 / cos(gamma))
+        x4_2 = 2 * np.pi - x4_1
+    x3_1 = gamma - x4_1 / 2
+    x3_2 = gamma - x4_2 / 2
 
-    m2 = -(-120*sin(x345)*sin(x6) - 100*cos(x345) + x * sin(x1) - y * cos(x1) + 100) / 400 #s3-s34
+    # x4_1 = arccos(1 - (m1 ** 2 + m2 ** 2) / 2)
+    # x4_2 = -x4_1
+    # x3_1 = arctan2(((1+cos(x4_1))*m1 + sin(x4_1)*m2)/(2*sin(x4_1)), ((1-cos(x4_1))*m1 - sin(x4_1)*m2)/(2*(1-cos(x4_1))))
+    # x3_2 = arctan2(((1+cos(x4_2))*m1 + sin(x4_2)*m2)/(2*sin(x4_2)), ((1-cos(x4_2))*m1 - sin(x4_2)*m2)/(2*(1-cos(x4_2))))
 
-    x4_1 = arccos(1 - (m1 ** 2 + m2 ** 2) / 2)
-    x4_2 = -x4_1
-    x3_1 = arctan2(((1+cos(x4_1))*m1 + sin(x4_1)*m2)/(2*sin(x4_1)), ((1-cos(x4_1))*m1 - sin(x4_1)*m2)/(2*(1-cos(x4_1))))
-    x3_2 = arctan2(((1+cos(x4_2))*m1 + sin(x4_2)*m2)/(2*sin(x4_2)), ((1-cos(x4_2))*m1 - sin(x4_2)*m2)/(2*(1-cos(x4_2))))
     x5_1 = x345 - x3_1 - x4_1
     x5_2 = x345 - x3_2 - x4_2
     print("x3_1, x3_2:", x3_1, x3_2)
@@ -104,10 +101,10 @@ def solve(T_target, x1, base_dir):
     x7_3 = calc_angle7(r, x1, x2_1, x6_3)
     x7_4 = calc_angle7(r, x1, x2_2, x6_4)
     print("angle7:", x7_1, x7_2, x7_3, x7_4)
-    x345_1 = calc_angle345(r, x1, x6_1, x7_1)
-    x345_2 = calc_angle345(r, x1, x6_2, x7_2)
-    x345_3 = calc_angle345(r, x1, x6_3, x7_3)
-    x345_4 = calc_angle345(r, x1, x6_4, x7_4)
+    x345_1 = calc_angle345(r, x1, x2_1, x6_1, x7_1)
+    x345_2 = calc_angle345(r, x1, x2_2, x6_2, x7_2)
+    x345_3 = calc_angle345(r, x1, x2_1, x6_3, x7_3)
+    x345_4 = calc_angle345(r, x1, x2_2, x6_4, x7_4)
     print("angle345:", x345_1, x345_2, x345_3, x345_4)
     x3_1, x4_1, x5_1, x3_5, x4_5, x5_5 = calc_angle34(x, y, z, x1, x2_1, x6_1, x345_1)
     x3_2, x4_2, x5_2, x3_6, x4_6, x5_6 = calc_angle34(x, y, z, x1, x2_2, x6_2, x345_2)
@@ -157,17 +154,42 @@ def inv(pos, x1, base_dir):# "pos" is a list
     answer = solve(T, x1, base_dir)
     return answer
 
-if __name__ == '__main__':
-    # 用户交互输入
-    end_xyz = input("End-effector XYZ position (in meters): ")
-    end_xyz = np.array([float(x) for x in end_xyz.split()])
-    
-    end_rpy = input("End-effector RPY angles (in degrees): ")
-    end_rpy = np.array([float(x) for x in end_rpy.split()])
+def read_inputs_from_file(filename):
+    """从txt文件中读取输入参数"""
+    with open(filename, 'r', encoding='utf-8') as file:
+        lines = file.readlines()
+    # 去除每行的换行符和空白字符
+    lines = [line.strip() for line in lines if line.strip()]
+    if len(lines) < 4:
+        raise ValueError("文件中的行数不足，需要至少4行输入")
+    # 第1行：末端执行器XYZ位置
+    end_xyz = np.array([float(x) for x in lines[0].split()])
+    # 第2行：末端执行器RPY角度
+    end_rpy = np.array([float(x) for x in lines[1].split()])
     # 将角度转换为弧度
     end_rpy = end_rpy * np.pi / 180
-    base_dir = input("Direction (L/R): ")
-    x1_input = input("Initial joint angle x1 (in degrees): ")
+    # 第3行：方向
+    base_dir = lines[2]
+    # 第4行：初始关节角度x1
+    x1_input = lines[3]
+        
+    return end_xyz, end_rpy, base_dir, x1_input
+
+if __name__ == '__main__':
+    # 用户交互输入
+    # end_xyz = input("End-effector XYZ position (in meters): ")
+    # end_xyz = np.array([float(x) for x in end_xyz.split()])
+    
+    # end_rpy = input("End-effector RPY angles (in degrees): ")
+    # end_rpy = np.array([float(x) for x in end_rpy.split()])
+    # # 将角度转换为弧度
+    # end_rpy = end_rpy * np.pi / 180
+    # base_dir = input("Direction (L/R): ")
+    # x1_input = input("Initial joint angle x1 (in degrees): ")
+
+    # 因为太烦了，搞成了从文件读取输入
+    filename = "input.txt"  # 你的txt文件名
+    end_xyz, end_rpy, base_dir, x1_input = read_inputs_from_file(filename)
     x1 = float(x1_input) * np.pi / 180  # 转换为弧度
     
     # 组合位置和姿态信息
@@ -177,7 +199,7 @@ if __name__ == '__main__':
     answer = inv(pos, x1, base_dir)
     
     # 参考值（用于比较）
-    # q_m2_0 = np.array([0, 1.0141970087846741, 1.1675742481274056, 1.54079182497142, -0.4332265804909674, -2.1273956448051194, 3.141592653589793])
+    q_m2_0 = np.array([0, 1.0141970087846741, 1.1675742481274056, 1.54079182497142, -0.4332265804909674, -2.1273956448051194, 3.141592653589793])
     
     print("==================")
     print("Calculated joint angles solutions (in degrees):")
@@ -198,9 +220,9 @@ if __name__ == '__main__':
         # ans[6] = -ans[6]
         
         # 计算与参考值的差异
-        # sum_diff = 0
-        # for j in range(len(ans)):
-        #     sum_diff = sum_diff + abs(q_m2_0[j] - ans[j])
+        sum_diff = 0
+        for j in range(len(ans)):
+            sum_diff = sum_diff + abs(q_m2_0[j] - ans[j])
         
         # 转换为角度制输出
         ans_degrees = [angle * 180 / np.pi for angle in ans]

@@ -12,7 +12,7 @@ from math import pi
 from math import *
 from numpy import arctan, arccos
 from coppeliasim_zmqremoteapi_client import RemoteAPIClient
-from Code.traj_planning import change_base_LtoR, change_base_RtoL, sexticCurvePlanning, sexticCurveExecute
+from traj_planning import change_base_LtoR, change_base_RtoL, sexticCurvePlanning, sexticCurveExecute
 print('Program started')
 
 client = RemoteAPIClient()

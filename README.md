@@ -1,5 +1,6 @@
 # 文件层级说明v1 2025.6.27
 
+```mermaid
 graph TD
     A[根目录]
     A --> B[Code: 在线代码]
@@ -9,3 +10,4 @@ graph TD
     C --> C1[calc_rct.m MATLAB正运动学仿真]
     C --> C2[forward_kinematics.py 正运动学计算]
     C --> C3[inverse_kinematics.py 逆运动学计算]
+```

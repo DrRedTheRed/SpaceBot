@@ -9,5 +9,6 @@ graph TD
     A --> C[Validation: 离线代码]
     C --> C1[calc_rct.m MATLAB正运动学仿真]
     C --> C2[forward_kinematics.py 正运动学计算]
-    C --> C3[inverse_kinematics.py 逆运动学计算]
+    C --> C3[IK_numerical.py 逆运动学数值解计算]
+    C --> C4[IK_analytical.py 逆运动学解析解计算]
 ```

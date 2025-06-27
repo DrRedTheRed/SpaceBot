@@ -48,7 +48,9 @@ def euler_error(R_target, R_current):
 
 # inverse kinematics using numerical jacobian
 def IK(end_xyz, end_rpy, direction, max_iter=1000, tol=1e-6):
-    theta = np.zeros(7) # initial guess for joint angles
+    # theta = np.zeros(7) # initial guess for joint angles
+    theta = np.array([2.09447475, -0.01664359, -0.71656178, 1.41390317, -0.69734138, 0.0166436, 2.09447475]) # initial guess for joint angles
+
     end_T = xyz_and_rpy_to_T(end_xyz, end_rpy)
     for i in range(max_iter):
         if direction == 'L':
@@ -75,4 +77,5 @@ if __name__ == '__main__':
     end_rpy = np.array([float(x) for x in end_rpy.split()])
     direction = input("Direction (L/R): ")
     theta = IK(end_xyz, end_rpy, direction)
+    print("Calculated joint angles (in radius):", theta)
     print("Calculated joint angles (in degrees):", theta * 180 / np.pi)

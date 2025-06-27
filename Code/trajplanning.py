@@ -1,7 +1,5 @@
 import numpy as np
 from numpy import pi
-from IK_L_base import inv as inv_L
-from IK_R_base import inv as inv_R
 
 def sexticCurvePlanning(startPosition, endPosition, time, startvel=np.array([0,0,0,0,0,0,0]), endvel=np.array([0,0,0,0,0,0,0])):
     timeMatrix = np.matrix([
@@ -46,28 +44,6 @@ def sexticCurveExecute(kArray, time):
         jointPosition = np.dot(kArray[i].T, timeVector)
         jointPositions.append(jointPosition[0, 0])
     return np.array(jointPositions)
-
-def straightTrajPlaning(start, startX1, end, endX1, t, time):
-    if t < time:
-        xArray = start*(1-t/time) + end*t/time
-        xangles = inv_L(xArray, startX1*(1-t/time) + endX1*t/time)
-        x = xangles
-    else:
-        x = inv_L(end, endX1)
-    for ans in x:
-    #控制范围在[-pi, pi]之间
-        for i in range(len(ans)):
-            if(ans[i] > np.pi): ans[i] -= np.pi * 2
-            if(ans[i] < -np.pi): ans[i] += np.pi * 2
-        ans[1] = -ans[1]
-        ans[2] = -ans[2]
-        ans[3] = -ans[3]
-        ans[5] = -ans[5]
-        ans[6] = -ans[6]
-        print(ans)
-    ret = x[5]
-    print("ret:",ret)
-    return ret
 
 def change_base_LtoR(sim):
     # 改变父子关系，从左变成右
@@ -148,34 +124,3 @@ def change_base_RtoL(sim):
     sim.setObjectParent(r_joint1, r_link1, 1)
     sim.setObjectParent(r_base, r_joint1, 1)
     print("This is L_Base")
-
-
-
-# 测试函数
-startPosition = np.array([0, 300, 0, pi, 0, -pi/2])
-endPosition = np.array([0, 300, 20, pi, 0, -pi/2])
-startX1 = 0.0
-endX1 = 0.0
-time = 1
-t = 0
-straightTrajPlaning(startPosition, startX1, endPosition, endX1, t, time)
-
-# # 打印结果
-# print("Start Position:", startPosition)
-# # 使用 quinticCurvePlanning 函数计算系数数组
-# kArray = sexticCurvePlanning(startPosition, endPosition, time)
-# while t <= time:
-#     # 使用 quinticCurveExecute 函数计算角度值
-#     jointPositions = sexticCurveExecute(kArray, t)
-#     print("Time:", t,"Joint Positions:", jointPositions)
-#     t = t+0.5
-
-
-# print("End Position:", endPosition)
-startPosition = np.array([0, -600, 0, pi, 0, -pi/2])
-endPosition = np.array([0, -600, 20, pi, 0, -pi/2])
-startX1 = 2/3*pi
-endX1 = 2/3*pi
-tim = 1
-q = straightTrajPlaning(startPosition, startX1, endPosition, endX1, 1, tim)
-print(q)

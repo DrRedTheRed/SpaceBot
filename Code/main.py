@@ -12,7 +12,7 @@ from math import pi
 from math import *
 from numpy import arctan, arccos
 from coppeliasim_zmqremoteapi_client import RemoteAPIClient
-from trajplanning import change_base_LtoR, change_base_RtoL, sexticCurvePlanning, sexticCurveExecute, sexticCurvePlanningPoint, straightTrajPlaning
+from trajplanning import change_base_LtoR, change_base_RtoL, sexticCurvePlanning, sexticCurveExecute
 print('Program started')
 
 client = RemoteAPIClient()
@@ -83,22 +83,26 @@ def set_joint_positions(sim, q, base):
         sim.setJointPosition(R_joint2, q[5])
         sim.setJointPosition(R_joint1, q[6])
 
-# 关节角通过IK_L_base.py和IK_R_base.py计算
-# q_test = np.array([0, -1.0471975511965979, -2.707988850562399, 1.539541238295402, 1.9731450413227956, 2.094395102393195, -6.123233995736766e-17]) #L_base, 600
-q0 = np.array([0, 0, 0, 0, 0, 0, 0]) #q0
+# 关节角通过inverse_kinematics.py计算。你需要首先基本知道q0，q1，q2的大概值，然后再迭代出好值。
 
-q1 = np.array([0, 2.094395102393195, 0.4336038030273939, -1.539541238295402, -1.1684476122669976, -1.0471975511965979, 0]) #第一步 R_base, 600, No.6
+# 由于仿真坐标系和实际坐标系不同，关节角需要转换。具体而言：L_base的关节角2,3,4,6,7需要取反，R_base的关节角2,4,5,6,7需要取反。
+# 以下是原来的参数
 
-q1_1 = np.array([0.066, 0.056978523455432084, -0.12154285835185606, 0.05, -0.1715480681505778, -0.05697852345543221, -0.066])
+# 以下是修改后的参数
 
-q1_2 = np.array([0, 2.060753653048625, 0.43322658049096774, -1.5407918249714194, -1.167574248127406, -1.0808390005411677, 0])
+q0 = np.array([0, 0, 0, 0, 0, 0, 0]) # 起始位置
 
-q2 = np.array([0, -2.790686821121354, -1.2220722576756144, -1.2252700800130993, 2.2650466426959754, -3.141592653589793, 2.790686821121354])
+q1 = np.array([2.09447475, 0.01664359, -0.71656178, -1.41390317, 0.69734138, -0.0166436, -2.09447475]) # 以B为基准的目标位置（第一次挪动）
 
-q_m2_0 = np.array([0, 1.0141970087846741, 1.1675742481274056, 1.54079182497142, -0.4332265804909674, -2.1273956448051194, 3.141592653589793])
-    
-q_m2_3 = np.array([0, -2.790686821121354, -1.2549397494525802, -1.2424883197633365, 2.214960911168772, -3.141592653589793, 2.790686821121354])
+q1_1 = np.array([0.06671612,0.06671593,0.02499931,0.05000519,-0.02500588,-0.06671593,-0.06671612]) # 抬起点
 
+q1_2 = np.array([2.09343291, 0.0333106, -0.68832498, -1.41516858, 0.72684361, -0.0333106, -2.09343291]) # 落点上方
+
+q2 = np.array([4.92659305, 0, -0.80382838, 0.69382108, -1.68080363, 1.35659225, 0]) # 以A为基准的目标位置（第二次挪动）
+
+q_m2_0 = np.array([2.09439510, 0, -0.66911340, 1.41516887, 0.74605546, 0, -2.09439510])
+
+q_m2_3 = np.array([2*np.pi-1.4103532, 0.00371712, -0.80441153, 0.71944925, -1.67872323, 1.41031052, 0.02326346])
 
 print(q1)
 print(q2)
@@ -114,7 +118,7 @@ k_2_4 = sexticCurvePlanning(q_m2_3, q2, 1)
 
 
 flag_turn = 1
-while (t := sim.getSimulationTime()) < 20:
+while (t := sim.getSimulationTime()) < 15:
     # 获取当前速度
     current_velocities = [sim.getJointVelocity(joint) for joint in [L_joint1, L_joint2, L_joint3, joint4, R_joint1, R_joint2, R_joint3]]
 
@@ -144,7 +148,6 @@ while (t := sim.getSimulationTime()) < 20:
             q = sexticCurveExecute(k_1_2, t-1)
         else:
             q = sexticCurveExecute(k_1_3, t-4)
-
         set_joint_positions(sim, q, "B")
 
     elif t < 6:
@@ -164,12 +167,7 @@ while (t := sim.getSimulationTime()) < 20:
                 if i % 2 == 1:      # is joint
                     sim.setJointPosition(i, -pos_now[(i - 17) // 2])
         if t < 7:
-            startPosition = np.array([0, 600, 0, pi, 0, -pi/2])
-            endPosition = np.array([0, 600, 20, pi, 0, -pi/2])
-            startX1 = 0.0
-            endX1 = 0.0
-            tim = 1
-            q = straightTrajPlaning(startPosition, startX1, endPosition, endX1, t-6, tim)
+            q = sexticCurveExecute(k_2_0, t-6)
 
         elif t < 10:
             q = sexticCurveExecute(k_2_1, t-7)
@@ -184,7 +182,8 @@ while (t := sim.getSimulationTime()) < 20:
     sim.addLog(sim.verbosity_scriptinfos, message)
     client.step()  # triggers next simulation step
     # time.sleep(0.01)
-time.sleep(5)
+time.sleep(1)
+
 
 # Change the parent
 # sim.setObjectParent(int objectHandle, int parentObjectHandle, bool keepInPlace)
@@ -196,3 +195,5 @@ sim.stopSimulation()
 sim.setInt32Param(sim.intparam_idle_fps, defaultIdleFps)
 
 print('Program ended')
+
+

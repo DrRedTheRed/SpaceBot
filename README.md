@@ -1,25 +1,11 @@
-# 代码文件说明
+# 文件层级说明v1 2025.6.27
 
-## 1. calc_rct.m
-使用MATLAB和Robotics Toolbox仿真机器人运动
-
-## 2. eul2rom.m
-将欧拉角转换为方向余弦矩阵
-
-## 3. forward_kinematics.py
-正运动学python实现
-
-## 4. inverse_kinematics.py
-逆运动学python实现
-
-## 5. IK_L_base.py
-L_base下的逆运动学解析解
-
-## 6. IK_R_base.py
-R_base下的逆运动学解析解
-
-## 7. example.py
-情况一的仿真程序
-
-## 8. example2.py
-情况二的仿真程序
+graph TD
+    A[根目录]
+    A --> B[Code: 在线代码]
+    B --> B1[main.py 主控<br/>与仿真通讯、发信，调用轨迹规划]
+    B --> B2[traj_planning.py 轨迹规划]
+    A --> C[Validation: 离线代码]
+    C --> C1[calc_rct.m MATLAB正运动学仿真]
+    C --> C2[forward_kinematics.py 正运动学计算]
+    C --> C3[inverse_kinematics.py 逆运动学计算]

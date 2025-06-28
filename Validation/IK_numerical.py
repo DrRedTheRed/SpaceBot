@@ -49,7 +49,7 @@ def euler_error(R_target, R_current):
 # inverse kinematics using numerical jacobian
 def IK(end_xyz, end_rpy, direction, max_iter=1000, tol=1e-6):
     # theta = np.zeros(7) # initial guess for joint angles
-    theta = np.array([2.09447475, -0.01664359, -0.71656178, 1.41390317, -0.69734138, 0.0166436, 2.09447475]) # initial guess for joint angles
+    theta = np.array([150, -33.59818989910257, -75.07890618248345, 62.588194110405524, 12.490712072077923, 33.59818989910257, 150]) * np.pi / 180 # initial guess for joint angles
 
     end_T = xyz_and_rpy_to_T(end_xyz, end_rpy)
     for i in range(max_iter):

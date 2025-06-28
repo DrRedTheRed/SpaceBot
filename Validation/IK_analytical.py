@@ -10,14 +10,12 @@ def calc_angle2and6(r, x, y, z, x1, base_dir):
     b1 = -r[2, 2] #sin的系数
     a2 = -x * cos(x1) - y * sin(x1) #cos系数2
     b2 = 120 - z #sin系数2
+    a = a2 - 120 * a1 #acosx + bsinx = -300
+    b = b2 - 120 * b1
     if base_dir == "R":
-        a = a2 + 120 * a1 #acosx + bsinx = 300
-        b = b2 + 120 * b1
         x2_1 = arctan2(300, sqrt(a ** 2 + b ** 2 - 300 ** 2)) - arctan2(a, b)
         x2_2 = arctan2(300, -sqrt(a ** 2 + b ** 2 - 300 ** 2)) - arctan2(a, b)
     else:
-        a = a2 - 120 * a1 #acosx + bsinx = -300
-        b = b2 - 120 * b1
         x2_1 = arctan2(-300, sqrt(a ** 2 + b ** 2 - 300 ** 2)) - arctan2(a, b)
         x2_2 = arctan2(-300, -sqrt(a ** 2 + b ** 2 - 300 ** 2)) - arctan2(a, b)
     x6_1 = -arcsin(a1 * cos(x2_1) + b1 * sin(x2_1))
@@ -59,27 +57,25 @@ def calc_angle345(r, x1,x2, x6, x7):
     print("345:",x345)
     return x345
 
-def calc_angle34(x, y, z, x1, x2, x6, x345):
+def calc_angle34(x, y, z, x1, x2, x6, x345, base_dir):
     m1 = (120*cos(x345)*cos(x6) - 100*sin(x345) + (z - 120) * cos(x2) - x * cos(x1) * sin(x2) - y * sin(x1) * sin(x2)) / 400 #c3-c34
     m2 = -(-120*sin(x345)*cos(x6) - 100*cos(x345) + x * sin(x1) - y * cos(x1) + 100) / 400 #s3-s34
-    gamma = arctan2(m1, -m2)
-    print("gamma:", gamma)
-    x4_1 = 0
-    x4_2 = 0
-    if(sin(gamma) > 1e-10):
-        x4_1 = 2 * arcsin(m1 / 2 / sin(gamma))
-        x4_2 = 2 * np.pi - x4_1
-    else:
-        x4_1 = 2 * arcsin(-m2 / 2 / cos(gamma))
-        x4_2 = 2 * np.pi - x4_1
-    x3_1 = gamma - x4_1 / 2
-    x3_2 = gamma - x4_2 / 2
-
-    # x4_1 = arccos(1 - (m1 ** 2 + m2 ** 2) / 2)
-    # x4_2 = -x4_1
-    # x3_1 = arctan2(((1+cos(x4_1))*m1 + sin(x4_1)*m2)/(2*sin(x4_1)), ((1-cos(x4_1))*m1 - sin(x4_1)*m2)/(2*(1-cos(x4_1))))
-    # x3_2 = arctan2(((1+cos(x4_2))*m1 + sin(x4_2)*m2)/(2*sin(x4_2)), ((1-cos(x4_2))*m1 - sin(x4_2)*m2)/(2*(1-cos(x4_2))))
-
+    # gamma = arctan2(m1, -m2)
+    # print("gamma:", gamma)
+    # x4_1 = 0
+    # x4_2 = 0
+    # if(sin(gamma) > 1e-10):
+    #     x4_1 = 2 * arcsin(m1 / 2 / sin(gamma))
+    #     x4_2 = 2 * np.pi - x4_1
+    # else:
+    #     x4_1 = 2 * arcsin(-m2 / 2 / cos(gamma))
+    #     x4_2 = 2 * np.pi - x4_1
+    # x3_1 = gamma - x4_1 / 2
+    # x3_2 = gamma - x4_2 / 2
+    x4_1 = arccos(1 - (m1 ** 2 + m2 ** 2) / 2)
+    x4_2 = -x4_1
+    x3_1 = arctan2(((1+cos(x4_1))*m1 + sin(x4_1)*m2)/(2*sin(x4_1)), ((1-cos(x4_1))*m1 - sin(x4_1)*m2)/(2*(1-cos(x4_1))))
+    x3_2 = arctan2(((1+cos(x4_2))*m1 + sin(x4_2)*m2)/(2*sin(x4_2)), ((1-cos(x4_2))*m1 - sin(x4_2)*m2)/(2*(1-cos(x4_2))))
     x5_1 = x345 - x3_1 - x4_1
     x5_2 = x345 - x3_2 - x4_2
     print("x3_1, x3_2:", x3_1, x3_2)
@@ -106,10 +102,10 @@ def solve(T_target, x1, base_dir):
     x345_3 = calc_angle345(r, x1, x2_1, x6_3, x7_3)
     x345_4 = calc_angle345(r, x1, x2_2, x6_4, x7_4)
     print("angle345:", x345_1, x345_2, x345_3, x345_4)
-    x3_1, x4_1, x5_1, x3_5, x4_5, x5_5 = calc_angle34(x, y, z, x1, x2_1, x6_1, x345_1)
-    x3_2, x4_2, x5_2, x3_6, x4_6, x5_6 = calc_angle34(x, y, z, x1, x2_2, x6_2, x345_2)
-    x3_3, x4_3, x5_3, x3_7, x4_7, x5_7 = calc_angle34(x, y, z, x1, x2_1, x6_3, x345_3)
-    x3_4, x4_4, x5_4, x3_8, x4_8, x5_8 = calc_angle34(x, y, z, x1, x2_2, x6_4, x345_4)
+    x3_1, x4_1, x5_1, x3_5, x4_5, x5_5 = calc_angle34(x, y, z, x1, x2_1, x6_1, x345_1, base_dir=base_dir)
+    x3_2, x4_2, x5_2, x3_6, x4_6, x5_6 = calc_angle34(x, y, z, x1, x2_2, x6_2, x345_2, base_dir=base_dir)
+    x3_3, x4_3, x5_3, x3_7, x4_7, x5_7 = calc_angle34(x, y, z, x1, x2_1, x6_3, x345_3, base_dir=base_dir)
+    x3_4, x4_4, x5_4, x3_8, x4_8, x5_8 = calc_angle34(x, y, z, x1, x2_2, x6_4, x345_4, base_dir=base_dir)
     print("angle3:", x3_1, x3_2, x3_3, x3_4, x3_5, x3_6, x3_7, x3_8)
     print("angle4:", x4_1, x4_2, x4_3, x4_4, x4_5, x4_6, x4_7, x4_8)
     print("angle5:", x5_1, x5_2, x5_3, x5_4, x5_5, x5_6, x5_7, x5_8)
@@ -186,9 +182,7 @@ if __name__ == '__main__':
     # end_rpy = end_rpy * np.pi / 180
     # base_dir = input("Direction (L/R): ")
     # x1_input = input("Initial joint angle x1 (in degrees): ")
-
-    # 因为太烦了，搞成了从文件读取输入
-    filename = "input.txt"  # 你的txt文件名
+    filename = "Validation/input.txt"  # 你的txt文件名
     end_xyz, end_rpy, base_dir, x1_input = read_inputs_from_file(filename)
     x1 = float(x1_input) * np.pi / 180  # 转换为弧度
     
@@ -199,7 +193,7 @@ if __name__ == '__main__':
     answer = inv(pos, x1, base_dir)
     
     # 参考值（用于比较）
-    q_m2_0 = np.array([0, 1.0141970087846741, 1.1675742481274056, 1.54079182497142, -0.4332265804909674, -2.1273956448051194, 3.141592653589793])
+    # q_m2_0 = np.array([0, 1.0141970087846741, 1.1675742481274056, 1.54079182497142, -0.4332265804909674, -2.1273956448051194, 3.141592653589793])
     
     print("==================")
     print("Calculated joint angles solutions (in degrees):")
@@ -220,9 +214,9 @@ if __name__ == '__main__':
         # ans[6] = -ans[6]
         
         # 计算与参考值的差异
-        sum_diff = 0
-        for j in range(len(ans)):
-            sum_diff = sum_diff + abs(q_m2_0[j] - ans[j])
+        # sum_diff = 0
+        # for j in range(len(ans)):
+        #     sum_diff = sum_diff + abs(q_m2_0[j] - ans[j])
         
         # 转换为角度制输出
         ans_degrees = [angle * 180 / np.pi for angle in ans]

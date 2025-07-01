@@ -55,13 +55,17 @@ velocityStreamHandles[4] = sim.addGraphStream(graph0, 'R_joint1 velocity', 'deg/
 velocityStreamHandles[5] = sim.addGraphStream(graph0, 'R_joint2 velocity', 'deg/s', 0, [0, 1, 1])
 velocityStreamHandles[6] = sim.addGraphStream(graph0, 'R_joint3 velocity', 'deg/s', 0, [1, 1, 1])
 
-# 低通滤波器函数用于减少绘制角速度曲线的毛刺
-def low_pass_filter(new_value, prev_filtered_value, alpha):
-    return alpha * new_value + (1 - alpha) * prev_filtered_value
+# 低通滤波器函数用于削掉尖刺
+def threshold_filter(new_value, threshold, prev_value):
+    if abs(new_value - prev_value) > threshold:
+        # 异常，丢弃
+        return 0
+    else:
+        return new_value
 
 # 初始化滤波器的历史值
 filtered_velocities = [0 for _ in range(7)]  # 假设有7个关节
-alpha = 0.05  # 滤波系数，需要根据实际情况调整
+threshold_dv = 0.5  # 理想低通滤波阈值，需要根据实际情况调整
 
 def set_joint_positions(sim, q, base):
     if (base == 'B'):
@@ -124,7 +128,8 @@ while (t := sim.getSimulationTime()) < 15:
 
     # 对每个关节的速度进行低通滤波
     for i in range(7):
-        filtered_velocities[i] = low_pass_filter(current_velocities[i], filtered_velocities[i], alpha)
+        filtered_velocities[i] = threshold_filter(current_velocities[i], threshold_dv, filtered_velocities[i])
+        # filtered_velocities[i] = current_velocities[i]  # 你也可以直接使用当前速度值，取消滤波试试看。你会看到一个爆大的、由基座转换产生的尖刺
 
     # 使用滤波后的速度值更新图表
     for i, vel in enumerate(filtered_velocities):
